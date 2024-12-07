@@ -36,56 +36,78 @@ function [X, y] = load_images_from_folder(folder_path, img_size, label_file)
   end
 end
 
-% === Step 2: Sigmoid Function ===
-function g = sigmoid(z)
-  g = 1 ./ (1 + exp(-z)); % Sigmoid function
-end
 
-% === Step 3: Define Cost Function ===
-function [J, grad] = costFunction(theta, X, y)
-  m = length(y); % Number of training examples
-  h = sigmoid(X * theta); % Predicted probabilities
-  J = -(1/m) * sum(y .* log(h) + (1 - y) .* log(1 - h)); % Log-loss function
-  grad = (1/m) * (X' * (h - y)); % Gradient of the cost function
-end
 
 % === Step 4: Train Logistic Regression Model ===
-function theta = trainModel(X, y)
-  initial_theta = zeros(size(X, 2), 1); % Initialize theta with zeros
+function theta = trainModel(initial_theta,X, y)
   options = optimset('GradObj', 'on', 'MaxIter', 400);
-  [theta, ~] = fminunc(@(t)(costFunction(t, X, y)), initial_theta, options); % Optimize theta
+  [theta, ~] = fminunc(@(t)(computeCost(t, X, y)), initial_theta, options); % Optimize theta
 end
 
-% === Step 5: Predict Function ===
-function p = predict(theta, X)
-  p = sigmoid(X * theta) >= 0.5; % Predict 1 if the probability >= 0.5, else 0
-end
 
 % === Step 6: Main Script ===
-folder_path = 'C:\Users\verma\OneDrive\Desktop\Downsample'; % Path to your folder with images
-label_file = 'C:\Users\verma\OneDrive\Desktop\Downsample\label.txt'; % Path to the label file
+folder_path = 'C:\Users\vizal\Documents\GitHub\MLproject\New_Downsample'; % Path to your folder with images
+label_file = 'C:\Users\vizal\Documents\GitHub\MLproject\New_Downsample\label.txt'; % Path to the label file
 img_size = [64, 64]; % Resize images to 64x64
 
 % Load images and labels
 [X, y] = load_images_from_folder(folder_path, img_size, label_file);
 X = [ones(size(X, 1), 1) X]; % Add intercept term (column of ones)
+initial_theta = zeros(size(X, 2), 1); % Initialize theta with zeros
+
+% Compute and display initial cost and gradient
+[cost, grad] = computeCost(initial_theta, X, y);
+
+fprintf('Cost at initial theta (zeros): %f\n', cost);
+fprintf('Gradient at initial theta (zeros): \n');
+fprintf(' %f \n', grad);
+
+fprintf('\nProgram paused. Press enter to continue.\n');
+pause;
 
 % Train the logistic regression model
-theta = trainModel(X, y);
+theta = trainModel(initial_theta,X, y);
+
+
+% Print theta to screen
+fprintf('Cost at theta found by fminunc: %f\n', cost);
+fprintf('theta: \n');
+fprintf(' %f \n', theta);
+
+% Plot Boundary
+%plotDecisionBoundary(theta, X, y);
+
+% Put some labels
+%hold on;
+% Labels and Legend
+%xlabel('Test 1 (Theory) Score')
+%ylabel('Test 2 (Coding) Score')
+
+% Specified in plot order
+%legend('Selected for Interview', 'Not Selected for Interview')
+%hold off;
+
+
+
+fprintf('\nProgram paused. Press enter to continue.\n');
+pause;
+
+%Testing
 
 % Test on a new image
-img_test_path = 'C:\Users\verma\OneDrive\Desktop\Downsample\sdfbsfsf.jpg';
+img_test_path = 'C:\Users\vizal\Downloads\TEST\TEST\sdfbsfsf.jpg';
 img_test = imread(img_test_path); % Read the test image
-
+%[X_test,y_test] = [X, y] = load_images_from_folder(folder_path, img_size, label_file);
 if size(img_test, 3) == 3
-    img_test = rgb2gray(img_test); % Convert to grayscale if it is a color image
+    img_test = rgb2gray(img_test);
+    imshow(img_test); % Convert to grayscale if it is a color image
 end
 img_test_resized = imresize(img_test, img_size); % Resize the test image
 X_test = double(img_test_resized(:))' / 255.0; % Flatten the test image, convert to double and normalize
 
 % Add intercept term (column of ones) to test data
 X_test = [1, X_test];
-
+y=0;
 % Make a prediction
 prediction = predict(theta, X_test);
 
@@ -101,4 +123,17 @@ predictions_train = predict(theta, X); % Predictions for training set
 accuracy = mean(double(predictions_train == y)) * 100;
 fprintf('Train Accuracy: %.2f%%\n', accuracy);
 
+% Cross-validation predictions
+%cv_predictions = sigmoid(X_cv * theta) >= 0.5;
+
+% Cross-validation error
+%cv_error = mean(double(cv_predictions ~= y_cv)) * 100;
+%fprintf('Cross-Validation Error: %.2f%%\n', cv_error);
+
+% Test predictions
+test_predictions = sigmoid(X_test * theta) ;
+
+% Test error
+test_error = mean(double(test_predictions ~= y_test)) * 100;
+fprintf('Test Error: %.2f%%\n', test_error);
 

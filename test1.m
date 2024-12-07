@@ -18,18 +18,6 @@ function X = preprocess_images(image_files, img_size)
   end
 end
 
-% === Step 2: Sigmoid Function ===
-function g = sigmoid(z)
-  g = 1 ./ (1 + exp(-z));
-end
-
-% === Step 3: Define Cost Function ===
-function [J, grad] = costFunction(theta, X, y)
-  m = length(y); % Number of training examples
-  h = sigmoid(X * theta); % Predicted probabilities
-  J = -(1/m) * sum(y .* log(h) + (1 - y) .* log(1 - h)); % Log-loss function
-  grad = (1/m) * (X' * (h - y)); % Gradient of the cost function
-end
 
 % === Step 4: Train Logistic Regression Model ===
 function theta = trainModel(X, y)
@@ -38,10 +26,6 @@ function theta = trainModel(X, y)
   [theta, ~] = fminunc(@(t)(costFunction(t, X, y)), initial_theta, options);
 end
 
-% === Step 5: Predict Function ===
-function p = predict(theta, X)
-  p = sigmoid(X * theta) >= 0.5; % Returns 1 if >= 0.5, else 0
-end
 
 % === Step 6: Main Script ===
 % File paths for clean and dirty water images
